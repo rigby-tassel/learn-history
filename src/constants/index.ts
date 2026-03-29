@@ -1,28 +1,13 @@
 import type { Achievement, LevelInfo, XPEvent } from '@/types'
 
-export const SUGGESTED_TOPICS = [
-  { label: 'Ancient Egypt', emoji: '🏛️' },
-  { label: 'Roman Empire', emoji: '⚔️' },
-  { label: 'Medieval Europe', emoji: '🏰' },
-  { label: 'Ancient Greece', emoji: '🏺' },
-  { label: 'World War II', emoji: '✈️' },
-  { label: 'The Renaissance', emoji: '🎨' },
-  { label: 'Aztec Empire', emoji: '🌎' },
-  { label: 'Ancient China', emoji: '🐉' },
-  { label: 'Viking Age', emoji: '🛡️' },
-  { label: 'American Revolution', emoji: '🗽' },
-  { label: 'The Space Race', emoji: '🚀' },
-  { label: 'Samurai Japan', emoji: '🗾' },
-]
-
 export const LEVEL_THRESHOLDS: LevelInfo[] = [
-  { level: 1, xpThreshold: 0, name: 'History Rookie' },
-  { level: 2, xpThreshold: 100, name: 'Time Traveler' },
-  { level: 3, xpThreshold: 250, name: 'History Buff' },
-  { level: 4, xpThreshold: 450, name: 'Ancient Scholar' },
-  { level: 5, xpThreshold: 700, name: 'Knowledge Keeper' },
-  { level: 6, xpThreshold: 1100, name: 'History Master' },
-  { level: 7, xpThreshold: 1600, name: 'Legend of the Ages' },
+  { level: 1, xpThreshold: 0, name: 'Rookie' },
+  { level: 2, xpThreshold: 100, name: 'Curious Explorer' },
+  { level: 3, xpThreshold: 250, name: 'Knowledge Seeker' },
+  { level: 4, xpThreshold: 450, name: 'Quick Learner' },
+  { level: 5, xpThreshold: 700, name: 'Brain Power' },
+  { level: 6, xpThreshold: 1100, name: 'Master Mind' },
+  { level: 7, xpThreshold: 1600, name: 'Walking Encyclopedia' },
 ]
 
 export const XP_REWARDS: Record<XPEvent, number> = {
@@ -45,23 +30,23 @@ export const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlockedAt'>[] = [
 
 export const LOADING_FACTS = [
   'The Great Wall of China is over 13,000 miles long!',
-  'Cleopatra lived closer to the Moon landing than to the building of the pyramids.',
-  'Vikings used to give kittens to new brides as wedding gifts.',
-  'Ancient Romans used urine as mouthwash — it actually works as a whitener!',
+  'Honey never spoils — archaeologists found 3,000-year-old honey in Egyptian tombs that was still edible.',
+  'Octopuses have three hearts and blue blood.',
+  'A group of flamingos is called a "flamboyance."',
   'The shortest war in history lasted only 38 minutes.',
-  'Aztecs used cacao beans as currency.',
+  'Bananas are technically berries, but strawberries are not.',
 ]
 
 export const LOADING_MESSAGES = [
-  'Discovering ancient secrets...',
-  'Unearthing hidden stories...',
-  'Connecting the past to today...',
+  'Digging up the good stuff...',
+  'Gathering the best stories...',
+  'Almost there...',
   'Finding the coolest facts...',
 ]
 
-export const LESSON_SYSTEM_PROMPT = `You are an engaging history teacher for students aged 12-14. You make history come alive with vivid storytelling, surprising facts, and connections to the modern world.
+export const LESSON_SYSTEM_PROMPT = `You are an engaging, enthusiastic teacher for students aged 12-14. You can teach ANY subject — history, science, sports, pop culture, nature, technology, or anything else. You make learning come alive with vivid storytelling, surprising facts, and connections to the real world.
 
-When given a topic, create exactly 6 lesson cards. Each card should be a self-contained mini-lesson that builds on the previous ones.
+When given a topic, create exactly 6 lesson cards. Each card should be a self-contained mini-lesson that builds on the previous ones. Adapt your style to the subject — be a sports commentator for sports topics, a scientist for science topics, a historian for history topics, etc.
 
 Respond with valid JSON matching this exact structure:
 {
@@ -72,10 +57,10 @@ Respond with valid JSON matching this exact structure:
       "title": "A short engaging title",
       "content": "2-3 paragraphs of engaging, age-appropriate content. Use vivid language and storytelling. Include specific names, dates, and places.",
       "funFact": "A surprising or cool fact related to this card's content",
-      "keyDates": ["1200 BCE - Event description", "1100 BCE - Another event"],
+      "keyDates": ["Key event or milestone with date/year"],
       "mediaType": "image",
-      "mediaSearchTerm": "search term for finding a relevant Wikipedia image",
-      "mediaCaption": "Caption for the image"
+      "mediaSearchTerm": "a simple 2-3 word search term for finding a relevant stock photo (e.g. 'egyptian pyramids', 'basketball court', 'space shuttle')",
+      "mediaCaption": "Short caption for the image"
     }
   ],
   "quizQuestions": [
@@ -106,7 +91,7 @@ Respond with valid JSON matching this exact structure:
   "suggestedSubtopics": ["Subtopic 1", "Subtopic 2", "Subtopic 3"]
 }`
 
-export const EVALUATE_SYSTEM_PROMPT = `You are a friendly, encouraging history teacher evaluating a student's answer. The student is 12-14 years old.
+export const EVALUATE_SYSTEM_PROMPT = `You are a friendly, encouraging teacher evaluating a student's answer. The student is 12-14 years old.
 
 Given the question, the expected answer, and the student's answer, determine if they demonstrated understanding. Be generous — accept answers that show the right idea even if they use different words or miss minor details.
 

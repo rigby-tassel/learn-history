@@ -48,22 +48,19 @@ export async function searchContent(topic: string): Promise<SearchResult> {
 
   const parsed = JSON.parse(content)
 
-  // Fetch Wikipedia images for each card
-  const cardsWithMedia = await Promise.all(
-    parsed.lessonCards.map(async (card: LessonCard & { mediaSearchTerm?: string }) => {
-      if (card.mediaSearchTerm) {
-        try {
-          const img = await fetchWikipediaImage(card.mediaSearchTerm)
-          if (img) {
-            return { ...card, mediaType: 'image' as const, mediaUrl: img.url, mediaCaption: img.caption || card.mediaCaption }
-          }
-        } catch {
-          // Fall through to no media
-        }
+  // Attach stock photos for each card via loremflickr (free, no key needed)
+  const cardsWithMedia = parsed.lessonCards.map((card: LessonCard & { mediaSearchTerm?: string }) => {
+    if (card.mediaSearchTerm) {
+      const query = card.mediaSearchTerm.split(' ').slice(0, 3).join(',')
+      return {
+        ...card,
+        mediaType: 'image' as const,
+        mediaUrl: `https://loremflickr.com/800/400/${encodeURIComponent(query)}`,
+        mediaCaption: card.mediaCaption,
       }
-      return { ...card, mediaType: card.mediaUrl ? card.mediaType : 'none' as const }
-    })
-  )
+    }
+    return { ...card, mediaType: card.mediaUrl ? card.mediaType : 'none' as const }
+  })
 
   return {
     lessonCards: cardsWithMedia,
@@ -88,36 +85,4 @@ export async function evaluateAnswer(
   ])
 
   return JSON.parse(content)
-}
-
-async function fetchWikipediaImage(searchTerm: string): Promise<{ url: string; caption: string } | null> {
-  try {
-    // Use Wikipedia's search API to find the best matching page
-    const searchRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&srlimit=3&format=json&origin=*`
-    )
-    if (!searchRes.ok) return null
-    const searchData = await searchRes.json()
-    const pages = searchData.query?.search
-    if (!pages || pages.length === 0) return null
-
-    // Try each search result until we find one with an image
-    for (const page of pages) {
-      const title = page.title
-      const summaryRes = await fetch(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
-      )
-      if (!summaryRes.ok) continue
-      const data = await summaryRes.json()
-      if (data.originalimage?.source) {
-        return { url: data.originalimage.source, caption: data.description || searchTerm }
-      }
-      if (data.thumbnail?.source) {
-        return { url: data.thumbnail.source, caption: data.description || searchTerm }
-      }
-    }
-    return null
-  } catch {
-    return null
-  }
 }

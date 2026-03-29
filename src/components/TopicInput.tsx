@@ -1,7 +1,5 @@
 import { useState } from 'react'
-import { Search, Mic, MicOff } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Search, Mic, MicOff, ArrowUp } from 'lucide-react'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { cn } from '@/lib/utils'
 
@@ -20,58 +18,54 @@ export default function TopicInput({ onSubmit, isLoading }: TopicInputProps) {
     e.preventDefault()
     const topic = displayValue.trim()
     if (topic && !isLoading) {
-      if (isListening) {
-        stopListening()
-        setValue(transcript)
-      }
+      if (isListening) { stopListening(); setValue(transcript) }
       onSubmit(topic)
     }
   }
 
   const toggleVoice = () => {
-    if (isListening) {
-      stopListening()
-      setValue(transcript)
-    } else {
-      startListening()
-    }
+    if (isListening) { stopListening(); setValue(transcript) }
+    else startListening()
   }
+
+  const hasValue = displayValue.trim().length > 0
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <div className={cn(
-        'flex items-center gap-2 rounded-2xl border-2 bg-card px-3 py-2 transition-all',
-        isListening ? 'border-destructive shadow-sm' : 'border-border focus-within:border-primary focus-within:shadow-md focus-within:shadow-primary/10',
+        'flex items-center gap-2 rounded-full border bg-card px-4 py-2.5 transition-all shadow-sm',
+        isListening ? 'border-destructive' : 'border-border focus-within:border-foreground/20 focus-within:shadow-md',
       )}>
-        <Search className="size-5 text-muted-foreground shrink-0" />
-        <Input
+        {!hasValue && <Search className="size-4 text-muted-foreground/50 shrink-0" />}
+        <input
           type="text"
           value={displayValue}
           onChange={e => setValue(e.target.value)}
-          placeholder="What do you want to learn about?"
-          className="flex-1 border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0 placeholder:text-muted-foreground"
+          placeholder="Ask anything"
+          className="flex-1 text-[15px] bg-transparent outline-none text-foreground placeholder:text-muted-foreground/50"
           disabled={isLoading || isListening}
-          autoFocus
         />
-        {isSupported && (
-          <Button
+        {isSupported && !hasValue && (
+          <button
             type="button"
-            variant={isListening ? 'destructive' : 'ghost'}
-            size="icon"
             onClick={toggleVoice}
-            className={cn('shrink-0 rounded-xl', isListening && 'animate-pulse-glow')}
+            className={cn(
+              'shrink-0 p-1.5 rounded-full transition-colors',
+              isListening ? 'text-destructive' : 'text-muted-foreground/50',
+            )}
           >
             {isListening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
-          </Button>
+          </button>
         )}
-        <Button
-          type="submit"
-          disabled={!displayValue.trim() || isLoading}
-          size="lg"
-          className="shrink-0 rounded-xl px-5 font-semibold"
-        >
-          {isLoading ? '...' : 'Go'}
-        </Button>
+        {hasValue && (
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="shrink-0 size-8 bg-foreground text-background rounded-full flex items-center justify-center disabled:opacity-40 transition-opacity"
+          >
+            <ArrowUp className="size-4" strokeWidth={2.5} />
+          </button>
+        )}
       </div>
     </form>
   )
