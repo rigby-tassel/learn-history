@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 interface MediaEmbedProps {
   type: 'image' | 'video' | 'none'
   url?: string
@@ -5,7 +7,9 @@ interface MediaEmbedProps {
 }
 
 export default function MediaEmbed({ type, url, caption }: MediaEmbedProps) {
-  if (type === 'none' || !url) return null
+  const [failed, setFailed] = useState(false)
+
+  if (type === 'none' || !url || failed) return null
 
   if (type === 'video') {
     return (
@@ -22,13 +26,13 @@ export default function MediaEmbed({ type, url, caption }: MediaEmbedProps) {
   }
 
   return (
-    <div className="relative w-full h-56 sm:h-64 bg-slate-200 overflow-hidden">
+    <div className="relative w-full h-48 sm:h-56 bg-muted overflow-hidden">
       <img
         src={url}
         alt={caption || ''}
         className="w-full h-full object-cover"
         loading="lazy"
-        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+        onError={() => setFailed(true)}
       />
       {caption && (
         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-2.5">

@@ -10,6 +10,7 @@ import { useSearchContent } from '@/hooks/useSearchContent'
 import { useSwipeGesture } from '@/hooks/useSwipeGesture'
 import { useGameState } from '@/hooks/useGameState'
 import type { QuizAnswer } from '@/types'
+import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
 
 export default function SessionPage() {
@@ -105,13 +106,10 @@ export default function SessionPage() {
     <ExploreLayout>
       {/* Top bar */}
       <div className="px-4 pt-3 pb-1 flex items-center justify-between">
-        <button
-          onClick={handleNewTopic}
-          className="flex items-center gap-1 text-sm text-slate-400 hover:text-primary transition-colors active:scale-95"
-        >
-          <ChevronLeft className="w-4 h-4" />
+        <Button variant="ghost" size="sm" onClick={handleNewTopic} className="gap-1 text-muted-foreground">
+          <ChevronLeft className="size-4" />
           Topics
-        </button>
+        </Button>
         <span className="text-xs font-bold text-primary uppercase tracking-wider">
           {session.topic}
         </span>
@@ -126,16 +124,12 @@ export default function SessionPage() {
       {searchMutation.isError && (
         <div className="flex flex-col items-center gap-4 px-6 py-16 animate-phase-in">
           <span className="text-4xl">😵</span>
-          <p className="text-sm text-slate-500 text-center">
+          <p className="text-sm text-muted-foreground text-center">
             {searchMutation.error?.message || 'Something went wrong'}
           </p>
           <div className="flex gap-3">
-            <button onClick={handleRetry} className="bg-primary text-white font-semibold px-5 py-2.5 rounded-xl active:scale-95 transition-transform">
-              Try Again
-            </button>
-            <button onClick={handleNewTopic} className="border-2 border-slate-200 text-slate-500 font-medium px-5 py-2.5 rounded-xl active:scale-95 transition-transform">
-              New Topic
-            </button>
+            <Button onClick={handleRetry} className="rounded-xl">Try Again</Button>
+            <Button variant="outline" onClick={handleNewTopic} className="rounded-xl">New Topic</Button>
           </div>
         </div>
       )}
@@ -186,20 +180,25 @@ export default function SessionPage() {
               ))}
             </div>
 
-            {/* Swipe hint or Skip to Quiz */}
-            {isLastCard ? (
-              <button
-                onClick={() => { gameState.awardXP('card-complete'); sessionXP.current += 10; nextCard() }}
-                className="w-full flex items-center justify-center gap-2 bg-primary text-white font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-transform"
+            {/* Navigation buttons */}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={handleSwipeLeft}
+                disabled={isFirstCard}
+                className="flex-1 h-12 rounded-xl text-base gap-2"
               >
-                Start Quiz
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            ) : (
-              <p className="text-center text-xs text-slate-400">
-                Swipe to continue {session.currentCardIndex + 1}/{session.lessonCards.length}
-              </p>
-            )}
+                <ChevronLeft className="size-5" />
+                Back
+              </Button>
+              <Button
+                onClick={() => { gameState.awardXP('card-complete'); sessionXP.current += 10; nextCard() }}
+                className="flex-1 h-12 rounded-xl text-base font-semibold gap-2"
+              >
+                {isLastCard ? 'Start Quiz' : 'Next'}
+                {isLastCard ? <ArrowRight className="size-5" /> : <ChevronRight className="size-5" />}
+              </Button>
+            </div>
           </div>
         </div>
       )}

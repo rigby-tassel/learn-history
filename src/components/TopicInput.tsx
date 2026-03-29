@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Search, Mic, MicOff } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { cn } from '@/lib/utils'
 
@@ -38,40 +40,38 @@ export default function TopicInput({ onSubmit, isLoading }: TopicInputProps) {
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <div className={cn(
-        'flex items-center gap-2 bg-white rounded-2xl border-2 px-4 py-3 transition-all shadow-sm',
-        isListening ? 'border-red-400 shadow-red-100' : 'border-slate-200 focus-within:border-primary focus-within:shadow-primary/10',
+        'flex items-center gap-2 rounded-2xl border-2 bg-card px-3 py-2 transition-all',
+        isListening ? 'border-destructive shadow-sm' : 'border-border focus-within:border-primary focus-within:shadow-md focus-within:shadow-primary/10',
       )}>
-        <Search className="w-5 h-5 text-slate-400 shrink-0" />
-        <input
+        <Search className="size-5 text-muted-foreground shrink-0" />
+        <Input
           type="text"
           value={displayValue}
           onChange={e => setValue(e.target.value)}
           placeholder="What do you want to learn about?"
-          className="flex-1 text-base outline-none bg-transparent text-slate-900 placeholder:text-slate-400"
+          className="flex-1 border-0 bg-transparent p-0 text-base shadow-none focus-visible:ring-0 placeholder:text-muted-foreground"
           disabled={isLoading || isListening}
           autoFocus
         />
         {isSupported && (
-          <button
+          <Button
             type="button"
+            variant={isListening ? 'destructive' : 'ghost'}
+            size="icon"
             onClick={toggleVoice}
-            className={cn(
-              'p-2 rounded-xl transition-colors shrink-0',
-              isListening
-                ? 'bg-red-100 text-red-600 animate-pulse-glow'
-                : 'bg-slate-100 text-slate-500 hover:bg-slate-200',
-            )}
+            className={cn('shrink-0 rounded-xl', isListening && 'animate-pulse-glow')}
           >
-            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          </button>
+            {isListening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+          </Button>
         )}
-        <button
+        <Button
           type="submit"
           disabled={!displayValue.trim() || isLoading}
-          className="bg-primary text-white font-semibold px-5 py-2 rounded-xl disabled:opacity-40 hover:bg-primary-dark transition-colors shrink-0"
+          size="lg"
+          className="shrink-0 rounded-xl px-5 font-semibold"
         >
-          {isLoading ? 'Loading...' : 'Go'}
-        </button>
+          {isLoading ? '...' : 'Go'}
+        </Button>
       </div>
     </form>
   )

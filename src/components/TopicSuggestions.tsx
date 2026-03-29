@@ -1,4 +1,5 @@
 import { SUGGESTED_TOPICS } from '@/constants'
+import { Button } from '@/components/ui/button'
 
 interface TopicSuggestionsProps {
   onSelect: (topic: string) => void
@@ -7,17 +8,18 @@ interface TopicSuggestionsProps {
 
 export default function TopicSuggestions({ onSelect, disabled }: TopicSuggestionsProps) {
   return (
-    <div className="grid grid-cols-2 gap-3 w-full">
+    <div className="grid grid-cols-2 gap-2.5 w-full">
       {SUGGESTED_TOPICS.map(({ label, emoji }) => (
-        <button
+        <Button
           key={label}
+          variant="outline"
           onClick={() => !disabled && onSelect(label)}
           disabled={disabled}
-          className="flex items-center gap-2 bg-white rounded-xl border border-slate-200 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:border-primary hover:bg-primary/5 hover:text-primary transition-all disabled:opacity-40 disabled:pointer-events-none active:scale-[0.97]"
+          className="h-auto justify-start gap-2.5 rounded-xl px-4 py-3.5 text-left text-sm font-medium"
         >
-          <span className="text-xl">{emoji}</span>
+          <span className="text-lg">{emoji}</span>
           <span>{label}</span>
-        </button>
+        </Button>
       ))}
     </div>
   )
