@@ -4,7 +4,8 @@ import MediaEmbed from './MediaEmbed'
 import ReadAloudButton from './ReadAloudButton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, Lightbulb, Clock } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { ChevronDown, Sparkles, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LessonCardProps {
@@ -13,68 +14,78 @@ interface LessonCardProps {
   total: number
 }
 
-export default function LessonCard({ card }: LessonCardProps) {
+export default function LessonCard({ card, index, total }: LessonCardProps) {
   const [showFact, setShowFact] = useState(false)
   const [showDates, setShowDates] = useState(false)
 
-  const fullText = [card.content, card.funFact && `Fun fact: ${card.funFact}`]
-    .filter(Boolean)
-    .join('. ')
+  const fullText = [card.content, card.funFact].filter(Boolean).join('. ')
 
   return (
-    <Card className="overflow-hidden rounded-2xl border-0 shadow-md">
+    <Card className="overflow-hidden rounded-3xl border shadow-lg">
+      {/* Image */}
       <MediaEmbed type={card.mediaType} url={card.mediaUrl} caption={card.mediaCaption} />
 
-      <CardContent className="px-5 pt-4 pb-5">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <h2 className="text-xl font-bold text-card-foreground leading-tight">{card.title}</h2>
-          <ReadAloudButton text={fullText} className="shrink-0 mt-0.5" />
+      <CardContent className="p-5 space-y-4">
+        {/* Card counter + Read aloud */}
+        <div className="flex items-center justify-between">
+          <Badge variant="secondary" className="rounded-full text-xs font-medium">
+            {index + 1} of {total}
+          </Badge>
+          <ReadAloudButton text={fullText} />
         </div>
 
-        <div className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line mb-4">
+        {/* Title */}
+        <h2 className="text-xl font-bold text-foreground leading-tight">{card.title}</h2>
+
+        {/* Content */}
+        <p className="text-[15px] leading-relaxed text-muted-foreground">
           {card.content}
-        </div>
+        </p>
 
+        {/* Tap for facts */}
         {card.funFact && (
-          <div className="mb-3">
-            {!showFact ? (
-              <Button
-                variant="secondary"
-                onClick={() => setShowFact(true)}
-                className="w-full justify-start gap-2 rounded-xl h-auto py-3 bg-amber-50 text-amber-700 hover:bg-amber-100 border-0"
-              >
-                <Lightbulb className="size-4" />
-                <span className="flex-1 text-left">Tap for a fun fact</span>
-                <ChevronDown className="size-4" />
-              </Button>
-            ) : (
-              <div className="bg-amber-50 rounded-xl px-4 py-3 animate-expand border border-amber-200">
-                <p className="text-sm text-amber-800">
-                  <span className="font-semibold">Fun fact:</span> {card.funFact}
-                </p>
-              </div>
-            )}
-          </div>
+          !showFact ? (
+            <Button
+              variant="outline"
+              onClick={() => setShowFact(true)}
+              className="w-full justify-between rounded-2xl h-auto py-3.5 border-amber-200 bg-amber-50/50 text-amber-700 hover:bg-amber-100/70 hover:text-amber-800"
+            >
+              <span className="flex items-center gap-2">
+                <Sparkles className="size-4" />
+                Tap for facts
+              </span>
+              <ChevronDown className="size-4" />
+            </Button>
+          ) : (
+            <div className="bg-amber-50 rounded-2xl px-4 py-3.5 animate-expand border border-amber-200">
+              <p className="text-sm text-amber-800">
+                <span className="font-semibold">Did you know? </span>{card.funFact}
+              </p>
+            </div>
+          )
         )}
 
+        {/* Key dates */}
         {card.keyDates && card.keyDates.length > 0 && (
           <div>
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={() => setShowDates(!showDates)}
               className={cn(
-                'w-full justify-start gap-2 rounded-xl h-auto py-3 border-0',
-                showDates ? 'bg-primary/10 text-primary hover:bg-primary/15' : '',
+                'w-full justify-between rounded-2xl h-auto py-3.5',
+                showDates && 'border-primary/30 bg-primary/5 text-primary hover:bg-primary/10',
               )}
             >
-              <Clock className="size-4" />
-              <span className="flex-1 text-left">Key Dates</span>
+              <span className="flex items-center gap-2">
+                <Clock className="size-4" />
+                Timeline
+              </span>
               <ChevronDown className={cn('size-4 transition-transform', showDates && 'rotate-180')} />
             </Button>
             {showDates && (
-              <div className="mt-2 pl-4 border-l-2 border-primary/30 space-y-2 animate-expand">
+              <div className="mt-3 pl-4 border-l-2 border-primary/30 space-y-2.5 animate-expand">
                 {card.keyDates.map((date, i) => (
-                  <p key={i} className="text-sm text-muted-foreground pl-2">{date}</p>
+                  <p key={i} className="text-sm text-muted-foreground pl-3">{date}</p>
                 ))}
               </div>
             )}

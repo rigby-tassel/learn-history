@@ -27,7 +27,7 @@ export default function TopicPickerPage() {
 
   return (
     <ExploreLayout>
-      <div className="flex-1 flex flex-col items-center gap-5 px-4 py-6">
+      <div className="flex-1 flex flex-col items-center gap-5 px-5 py-6">
         {/* Hero */}
         <div className="text-center animate-fade-in">
           <div className="text-5xl mb-2">🌍</div>
@@ -40,7 +40,7 @@ export default function TopicPickerPage() {
         </div>
 
         {/* Level badge */}
-        <Card className="w-full rounded-2xl border shadow-sm animate-fade-in">
+        <Card className="w-full rounded-3xl border shadow-sm animate-fade-in">
           <CardContent className="flex items-center gap-3 p-4">
             <div className="size-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
               <span className="text-lg font-black text-primary">{currentLevel.level}</span>

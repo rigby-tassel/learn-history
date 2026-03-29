@@ -15,7 +15,7 @@ export default function TopicSuggestions({ onSelect, disabled }: TopicSuggestion
           variant="outline"
           onClick={() => !disabled && onSelect(label)}
           disabled={disabled}
-          className="h-auto justify-start gap-2.5 rounded-xl px-4 py-3.5 text-left text-sm font-medium"
+          className="h-auto justify-start gap-2.5 rounded-2xl px-4 py-3.5 text-left text-sm font-medium shadow-sm"
         >
           <span className="text-lg">{emoji}</span>
           <span>{label}</span>
