@@ -31,27 +31,32 @@ export default function QuizView({ questions, onComplete }: QuizViewProps) {
   }
 
   return (
-    <div className="animate-slide-up">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-slate-900">Quiz Time!</h2>
-        <span className="text-sm text-slate-400">
-          {currentIndex + 1} of {questions.length}
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-bold text-slate-900">Quiz Time! 🧠</h2>
+        <span className="text-sm font-medium text-slate-400">
+          {currentIndex + 1}/{questions.length}
         </span>
       </div>
 
-      <div className="flex gap-1.5 mb-6">
-        {questions.map((_, i) => (
-          <div
-            key={i}
-            className={`flex-1 h-1.5 rounded-full transition-colors ${
-              i < currentIndex
-                ? 'bg-primary'
-                : i === currentIndex
-                  ? 'bg-primary/50'
-                  : 'bg-slate-200'
-            }`}
-          />
-        ))}
+      {/* Progress dots with checkmarks */}
+      <div className="flex gap-2 mb-5">
+        {questions.map((_, i) => {
+          const answered = answers[i]
+          return (
+            <div
+              key={i}
+              className={cn(
+                'flex-1 h-2 rounded-full transition-all duration-300',
+                i < currentIndex
+                  ? answered?.isCorrect ? 'bg-correct' : 'bg-incorrect'
+                  : i === currentIndex
+                    ? 'bg-primary/50'
+                    : 'bg-slate-200',
+              )}
+            />
+          )
+        })}
       </div>
 
       {currentQuestion && (
@@ -66,4 +71,8 @@ export default function QuizView({ questions, onComplete }: QuizViewProps) {
       )}
     </div>
   )
+}
+
+function cn(...classes: (string | false | undefined)[]) {
+  return classes.filter(Boolean).join(' ')
 }

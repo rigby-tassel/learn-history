@@ -24,28 +24,30 @@ export default function QuizQuestionCard({
 }: QuizQuestionCardProps) {
   const [textInput, setTextInput] = useState('')
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
-  const [feedback, setFeedback] = useState<string>('')
+  const [feedback, setFeedback] = useState('')
+  const [answerAnim, setAnswerAnim] = useState<'correct' | 'wrong' | null>(null)
   const evaluateMutation = useEvaluateAnswer()
   const { isListening, transcript, isSupported, startListening, stopListening } = useSpeechRecognition()
 
   const displayInput = isListening ? transcript : textInput
 
-  const handleOptionSelect = async (option: string) => {
+  const handleOptionSelect = (option: string) => {
     if (showFeedback) return
     setSelectedOption(option)
     const isCorrect = option === question.correctAnswer
+    setAnswerAnim(isCorrect ? 'correct' : 'wrong')
     setFeedback(question.explanation)
-    onAnswer({
-      questionId: question.id,
-      userAnswer: option,
-      isCorrect,
-    })
+
+    if (isCorrect) {
+      window.dispatchEvent(new Event('game-confetti'))
+    }
+
+    onAnswer({ questionId: question.id, userAnswer: option, isCorrect })
   }
 
   const handleFreeResponse = async () => {
     const answer = displayInput.trim()
     if (!answer) return
-
     if (isListening) stopListening()
 
     try {
@@ -55,127 +57,125 @@ export default function QuizQuestionCard({
         userAnswer: answer,
       })
       setFeedback(result.feedback)
-      onAnswer({
-        questionId: question.id,
-        userAnswer: answer,
-        isCorrect: result.isCorrect,
-      })
+      setAnswerAnim(result.isCorrect ? 'correct' : 'wrong')
+      if (result.isCorrect) window.dispatchEvent(new Event('game-confetti'))
+      onAnswer({ questionId: question.id, userAnswer: answer, isCorrect: result.isCorrect })
     } catch {
-      // Fallback: simple string matching
       const isCorrect = answer.toLowerCase().includes(
         question.correctAnswer.toLowerCase().split(' ').slice(0, 3).join(' ')
       )
       setFeedback(question.explanation)
-      onAnswer({
-        questionId: question.id,
-        userAnswer: answer,
-        isCorrect,
-      })
+      setAnswerAnim(isCorrect ? 'correct' : 'wrong')
+      if (isCorrect) window.dispatchEvent(new Event('game-confetti'))
+      onAnswer({ questionId: question.id, userAnswer: answer, isCorrect })
     }
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-      <p className="text-base font-semibold text-slate-900 mb-4">{question.question}</p>
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="p-5">
+        <p className="text-base font-bold text-slate-900 mb-4 leading-snug">{question.question}</p>
 
-      {/* Multiple choice / True-false */}
-      {(question.type === 'multiple_choice' || question.type === 'true_false') && question.options && (
-        <div className="space-y-2 mb-4">
-          {question.options.map(option => {
-            const isSelected = selectedOption === option
-            const isCorrectOption = option === question.correctAnswer
-            let optionStyle = 'border-slate-200 hover:border-primary hover:bg-primary/5'
-            if (showFeedback && isSelected && lastAnswer?.isCorrect) {
-              optionStyle = 'border-correct bg-green-50 text-green-800'
-            } else if (showFeedback && isSelected && !lastAnswer?.isCorrect) {
-              optionStyle = 'border-incorrect bg-red-50 text-red-800'
-            } else if (showFeedback && isCorrectOption) {
-              optionStyle = 'border-correct bg-green-50 text-green-800'
-            }
+        {/* Multiple choice / True-false */}
+        {(question.type === 'multiple_choice' || question.type === 'true_false') && question.options && (
+          <div className="space-y-2.5 mb-4">
+            {question.options.map(option => {
+              const isSelected = selectedOption === option
+              const isCorrectOption = option === question.correctAnswer
 
-            return (
-              <button
-                key={option}
-                onClick={() => handleOptionSelect(option)}
-                disabled={showFeedback}
-                className={cn(
-                  'w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all',
-                  optionStyle,
-                  showFeedback && 'pointer-events-none',
-                )}
-              >
-                <span className="flex items-center gap-2">
-                  {showFeedback && isCorrectOption && <CheckCircle2 className="w-4 h-4 text-correct shrink-0" />}
-                  {showFeedback && isSelected && !lastAnswer?.isCorrect && <XCircle className="w-4 h-4 text-incorrect shrink-0" />}
-                  {option}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
+              let optionClass = 'border-slate-200 bg-white active:scale-[0.98]'
+              if (showFeedback && isSelected && lastAnswer?.isCorrect) {
+                optionClass = 'border-correct bg-green-50 animate-correct-bounce'
+              } else if (showFeedback && isSelected && !lastAnswer?.isCorrect) {
+                optionClass = 'border-incorrect bg-red-50 animate-shake'
+              } else if (showFeedback && isCorrectOption) {
+                optionClass = 'border-correct bg-green-50'
+              }
 
-      {/* Free response */}
-      {question.type === 'free_response' && !showFeedback && (
-        <div className="mb-4">
-          <div className="flex items-center gap-2 bg-slate-50 rounded-xl border border-slate-200 px-3 py-2">
-            <textarea
-              value={displayInput}
-              onChange={e => setTextInput(e.target.value)}
-              placeholder="Type your answer..."
-              className="flex-1 text-sm outline-none bg-transparent resize-none min-h-[60px] text-slate-900 placeholder:text-slate-400"
-              disabled={isListening}
-            />
-            <div className="flex flex-col gap-2 shrink-0">
-              {isSupported && (
+              return (
                 <button
-                  type="button"
-                  onClick={() => isListening ? stopListening() : startListening()}
+                  key={option}
+                  onClick={() => handleOptionSelect(option)}
+                  disabled={showFeedback}
                   className={cn(
-                    'p-2 rounded-lg transition-colors',
-                    isListening ? 'bg-red-100 text-red-600' : 'bg-slate-200 text-slate-500',
+                    'w-full text-left px-4 py-3.5 rounded-xl border-2 text-sm font-medium transition-all min-h-[44px]',
+                    optionClass,
+                    showFeedback && 'pointer-events-none',
                   )}
                 >
-                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  <span className="flex items-center gap-2.5">
+                    {showFeedback && isCorrectOption && <CheckCircle2 className="w-5 h-5 text-correct shrink-0" />}
+                    {showFeedback && isSelected && !lastAnswer?.isCorrect && <XCircle className="w-5 h-5 text-incorrect shrink-0" />}
+                    {option}
+                  </span>
                 </button>
-              )}
-              <button
-                onClick={handleFreeResponse}
-                disabled={!displayInput.trim() || evaluateMutation.isPending}
-                className="p-2 bg-primary text-white rounded-lg disabled:opacity-40"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
+              )
+            })}
           </div>
-          {evaluateMutation.isPending && (
-            <p className="text-xs text-slate-400 mt-2">Checking your answer...</p>
-          )}
-        </div>
-      )}
+        )}
 
-      {/* Feedback */}
-      {showFeedback && (
-        <div className={cn(
-          'rounded-xl px-4 py-3 mb-4 animate-fade-in',
-          lastAnswer?.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200',
-        )}>
-          <p className="text-sm font-semibold mb-1">
-            {lastAnswer?.isCorrect ? '🎉 Correct!' : '💡 Not quite!'}
-          </p>
-          <p className="text-sm text-slate-700">{feedback}</p>
-        </div>
-      )}
+        {/* Free response */}
+        {question.type === 'free_response' && !showFeedback && (
+          <div className="mb-4">
+            <div className="flex items-end gap-2 bg-slate-50 rounded-xl border border-slate-200 px-3 py-2.5">
+              <textarea
+                value={displayInput}
+                onChange={e => setTextInput(e.target.value)}
+                placeholder="Type your answer..."
+                className="flex-1 text-sm outline-none bg-transparent resize-none min-h-[56px] text-slate-900 placeholder:text-slate-400"
+                disabled={isListening}
+              />
+              <div className="flex gap-1.5 shrink-0 pb-0.5">
+                {isSupported && (
+                  <button
+                    type="button"
+                    onClick={() => isListening ? stopListening() : startListening()}
+                    className={cn(
+                      'p-2.5 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center',
+                      isListening ? 'bg-red-100 text-red-600' : 'bg-slate-200 text-slate-500',
+                    )}
+                  >
+                    {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  </button>
+                )}
+                <button
+                  onClick={handleFreeResponse}
+                  disabled={!displayInput.trim() || evaluateMutation.isPending}
+                  className="p-2.5 bg-primary text-white rounded-xl disabled:opacity-40 min-w-[44px] min-h-[44px] flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            {evaluateMutation.isPending && (
+              <p className="text-xs text-slate-400 mt-2 animate-pulse">Checking your answer...</p>
+            )}
+          </div>
+        )}
 
-      {/* Next button */}
-      {showFeedback && (
-        <button
-          onClick={onNext}
-          className="w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary-dark transition-colors animate-fade-in"
-        >
-          {isLast ? 'See Results' : 'Next Question'}
-        </button>
-      )}
+        {/* Feedback */}
+        {showFeedback && (
+          <div className={cn(
+            'rounded-xl px-4 py-3 mb-4 animate-slide-up',
+            answerAnim === 'correct' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200',
+          )}>
+            <p className="text-sm font-bold mb-0.5">
+              {answerAnim === 'correct' ? '🎉 Correct! +25 XP' : '💡 Not quite!'}
+            </p>
+            <p className="text-sm text-slate-600">{feedback}</p>
+          </div>
+        )}
+
+        {/* Next button */}
+        {showFeedback && (
+          <button
+            onClick={onNext}
+            className="w-full bg-primary text-white font-semibold py-3.5 rounded-xl active:scale-[0.98] transition-transform animate-fade-in min-h-[44px]"
+          >
+            {isLast ? 'See Results' : 'Next Question'}
+          </button>
+        )}
+      </div>
     </div>
   )
 }

@@ -1,3 +1,5 @@
+import type { Achievement, LevelInfo, XPEvent } from '@/types'
+
 export const SUGGESTED_TOPICS = [
   { label: 'Ancient Egypt', emoji: '🏛️' },
   { label: 'Roman Empire', emoji: '⚔️' },
@@ -11,6 +13,50 @@ export const SUGGESTED_TOPICS = [
   { label: 'American Revolution', emoji: '🗽' },
   { label: 'The Space Race', emoji: '🚀' },
   { label: 'Samurai Japan', emoji: '🗾' },
+]
+
+export const LEVEL_THRESHOLDS: LevelInfo[] = [
+  { level: 1, xpThreshold: 0, name: 'History Rookie' },
+  { level: 2, xpThreshold: 100, name: 'Time Traveler' },
+  { level: 3, xpThreshold: 250, name: 'History Buff' },
+  { level: 4, xpThreshold: 450, name: 'Ancient Scholar' },
+  { level: 5, xpThreshold: 700, name: 'Knowledge Keeper' },
+  { level: 6, xpThreshold: 1100, name: 'History Master' },
+  { level: 7, xpThreshold: 1600, name: 'Legend of the Ages' },
+]
+
+export const XP_REWARDS: Record<XPEvent, number> = {
+  'card-complete': 10,
+  'quiz-correct': 25,
+  'session-complete': 50,
+  'subtopic-explore': 15,
+}
+
+export const ACHIEVEMENT_DEFS: Omit<Achievement, 'unlockedAt'>[] = [
+  { id: 'first-explorer', name: 'First Explorer', description: 'Complete your first session', icon: '🧭' },
+  { id: 'perfect-score', name: 'Perfect Score', description: 'Get 100% on a quiz', icon: '💯' },
+  { id: 'curious-mind', name: 'Curious Mind', description: 'Explore 5 different topics', icon: '🧠' },
+  { id: 'deep-diver', name: 'Deep Diver', description: 'Explore a subtopic', icon: '🤿' },
+  { id: 'streak-3', name: 'On Fire', description: '3-day learning streak', icon: '🔥' },
+  { id: 'streak-7', name: 'Unstoppable', description: '7-day learning streak', icon: '⚡' },
+  { id: 'level-5', name: 'Scholar', description: 'Reach level 5', icon: '🎓' },
+  { id: 'xp-500', name: 'XP Hunter', description: 'Earn 500 total XP', icon: '💎' },
+]
+
+export const LOADING_FACTS = [
+  'The Great Wall of China is over 13,000 miles long!',
+  'Cleopatra lived closer to the Moon landing than to the building of the pyramids.',
+  'Vikings used to give kittens to new brides as wedding gifts.',
+  'Ancient Romans used urine as mouthwash — it actually works as a whitener!',
+  'The shortest war in history lasted only 38 minutes.',
+  'Aztecs used cacao beans as currency.',
+]
+
+export const LOADING_MESSAGES = [
+  'Discovering ancient secrets...',
+  'Unearthing hidden stories...',
+  'Connecting the past to today...',
+  'Finding the coolest facts...',
 ]
 
 export const LESSON_SYSTEM_PROMPT = `You are an engaging history teacher for students aged 12-14. You make history come alive with vivid storytelling, surprising facts, and connections to the modern world.

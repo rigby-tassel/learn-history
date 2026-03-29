@@ -1,17 +1,29 @@
 import type { ReactNode } from 'react'
+import XPBar from './XPBar'
+import XPPopup from './XPPopup'
+import Confetti from './Confetti'
+import StreakBanner from './StreakBanner'
 
 export default function ExploreLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh flex flex-col bg-surface">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3">
-        <div className="max-w-lg mx-auto flex items-center gap-2">
-          <span className="text-2xl">🌍</span>
-          <h1 className="text-lg font-bold text-slate-900">History Explorer</h1>
+      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 py-2.5">
+        <div className="max-w-lg mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🌍</span>
+            <h1 className="text-base font-bold text-slate-900">History Explorer</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <StreakBanner />
+            <XPBar />
+          </div>
         </div>
       </header>
-      <main className="flex-1 flex flex-col max-w-lg mx-auto w-full px-4 py-6">
+      <main className="flex-1 flex flex-col max-w-lg mx-auto w-full">
         {children}
       </main>
+      <XPPopup />
+      <Confetti />
     </div>
   )
 }

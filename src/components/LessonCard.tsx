@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import type { LessonCard as LessonCardType } from '@/types'
 import MediaEmbed from './MediaEmbed'
 import ReadAloudButton from './ReadAloudButton'
+import { ChevronDown, Lightbulb, Clock } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface LessonCardProps {
   card: LessonCardType
@@ -8,60 +11,76 @@ interface LessonCardProps {
   total: number
 }
 
-export default function LessonCard({ card, index, total }: LessonCardProps) {
+export default function LessonCard({ card }: LessonCardProps) {
+  const [showFact, setShowFact] = useState(false)
+  const [showDates, setShowDates] = useState(false)
+
   const fullText = [card.content, card.funFact && `Fun fact: ${card.funFact}`]
     .filter(Boolean)
     .join('. ')
 
   return (
-    <div className="animate-slide-up">
-      {/* Progress indicator */}
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-xs font-medium text-slate-400">
-          {index + 1} of {total}
-        </span>
-        <div className="flex-1 mx-3 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-500"
-            style={{ width: `${((index + 1) / total) * 100}%` }}
-          />
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+      {/* Full-bleed media */}
+      <MediaEmbed type={card.mediaType} url={card.mediaUrl} caption={card.mediaCaption} />
+
+      <div className="px-5 pt-4 pb-5">
+        {/* Title + read aloud */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <h2 className="text-xl font-bold text-slate-900 leading-tight">{card.title}</h2>
+          <ReadAloudButton text={fullText} className="shrink-0 mt-0.5" />
         </div>
-        <ReadAloudButton text={fullText} />
-      </div>
 
-      {/* Card content */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <MediaEmbed type={card.mediaType} url={card.mediaUrl} caption={card.mediaCaption} />
+        {/* Content */}
+        <div className="text-sm leading-relaxed text-slate-600 whitespace-pre-line mb-4">
+          {card.content}
+        </div>
 
-        <div className="p-5">
-          <h2 className="text-xl font-bold text-slate-900 mb-3">{card.title}</h2>
-
-          <div className="text-sm leading-relaxed text-slate-700 whitespace-pre-line mb-4">
-            {card.content}
+        {/* Tap-to-reveal fun fact */}
+        {card.funFact && (
+          <div className="mb-3">
+            {!showFact ? (
+              <button
+                onClick={() => setShowFact(true)}
+                className="flex items-center gap-2 w-full bg-amber-50 text-amber-700 rounded-xl px-4 py-3 text-sm font-medium active:scale-[0.98] transition-transform"
+              >
+                <Lightbulb className="w-4 h-4" />
+                Tap for a fun fact
+                <ChevronDown className="w-4 h-4 ml-auto" />
+              </button>
+            ) : (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 animate-expand">
+                <p className="text-sm text-amber-800">
+                  <span className="font-semibold">Fun fact:</span> {card.funFact}
+                </p>
+              </div>
+            )}
           </div>
+        )}
 
-          {card.funFact && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
-              <p className="text-sm text-amber-800">
-                <span className="font-semibold">Fun fact:</span> {card.funFact}
-              </p>
-            </div>
-          )}
-
-          {card.keyDates && card.keyDates.length > 0 && (
-            <div className="bg-slate-50 rounded-xl px-4 py-3">
-              <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Key Dates</p>
-              <ul className="space-y-1">
+        {/* Collapsible key dates */}
+        {card.keyDates && card.keyDates.length > 0 && (
+          <div>
+            <button
+              onClick={() => setShowDates(!showDates)}
+              className={cn(
+                'flex items-center gap-2 w-full rounded-xl px-4 py-3 text-sm font-medium active:scale-[0.98] transition-all',
+                showDates ? 'bg-primary/5 text-primary' : 'bg-slate-50 text-slate-500',
+              )}
+            >
+              <Clock className="w-4 h-4" />
+              Key Dates
+              <ChevronDown className={cn('w-4 h-4 ml-auto transition-transform', showDates && 'rotate-180')} />
+            </button>
+            {showDates && (
+              <div className="mt-2 pl-4 border-l-2 border-primary/30 space-y-2 animate-expand">
                 {card.keyDates.map((date, i) => (
-                  <li key={i} className="text-sm text-slate-600 flex gap-2">
-                    <span className="text-primary">&#x2022;</span>
-                    {date}
-                  </li>
+                  <p key={i} className="text-sm text-slate-600 pl-2">{date}</p>
                 ))}
-              </ul>
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -38,3 +38,43 @@ export interface ExploreSession {
   phase: SessionPhase
   suggestedSubtopics: string[]
 }
+
+// Gamification types
+export type XPEvent = 'card-complete' | 'quiz-correct' | 'session-complete' | 'subtopic-explore'
+
+export interface Achievement {
+  id: string
+  name: string
+  description: string
+  icon: string
+  unlockedAt: string | null
+}
+
+export interface GameState {
+  xp: number
+  level: number
+  streak: {
+    current: number
+    lastActiveDate: string // "2026-03-28"
+  }
+  achievements: Achievement[]
+  stats: {
+    totalSessions: number
+    totalTopicsExplored: string[]
+    perfectQuizzes: number
+    subtopicsExplored: number
+  }
+}
+
+export interface LevelInfo {
+  level: number
+  name: string
+  xpThreshold: number
+}
+
+export interface XPAwardResult {
+  amount: number
+  newTotal: number
+  leveledUp: boolean
+  newLevel?: LevelInfo
+}
