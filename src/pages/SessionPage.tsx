@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ExploreLayout from '@/components/ExploreLayout'
 import LoadingState from '@/components/LoadingState'
@@ -12,7 +12,8 @@ import { useGameState } from '@/hooks/useGameState'
 import type { QuizAnswer } from '@/types'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
+const CARD_DURATION = 12000 // 12 seconds per card
 
 export default function SessionPage() {
   const navigate = useNavigate()
@@ -24,21 +25,46 @@ export default function SessionPage() {
   const gameState = useGameState()
   const sessionXP = useRef(0)
 
+  // Timer state
+  const [timerActive, setTimerActive] = useState(true)
+  const [timerKey, setTimerKey] = useState(0) // forces CSS animation restart
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const isLearning = session?.phase === 'learning' && (session?.lessonCards.length ?? 0) > 0
   const isFirstCard = session?.currentCardIndex === 0
   const isLastCard = session?.currentCardIndex === (session?.lessonCards.length ?? 1) - 1
+  const currentIndex = session?.currentCardIndex ?? 0
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (!isLearning) return
     gameState.awardXP('card-complete')
     sessionXP.current += 10
     nextCard()
-  }
+    // Reset timer for next card
+    setTimerKey(k => k + 1)
+    setTimerActive(true)
+  }, [isLearning, gameState, nextCard])
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (!isLearning || isFirstCard) return
     prevCard()
-  }
+    setTimerKey(k => k + 1)
+    setTimerActive(true)
+  }, [isLearning, isFirstCard, prevCard])
+
+  // Auto-advance timer
+  useEffect(() => {
+    if (!isLearning || !timerActive) return
+
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      handleNext()
+    }, CARD_DURATION)
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [isLearning, timerActive, timerKey, handleNext])
 
   const { containerRef, style } = useSwipeGesture({
     onSwipeRight: handleNext,
@@ -82,19 +108,27 @@ export default function SessionPage() {
 
   return (
     <ExploreLayout>
-      {/* Story-style progress bar + topic header — only during learning */}
+      {/* Story-style progress bar with animated fill timer */}
       {isLearning && (
         <div className="sticky top-[49px] z-30 bg-background/90 backdrop-blur-xl px-4 pt-3 pb-2">
-          {/* Progress segments */}
+          {/* Progress segments — active one animates over CARD_DURATION */}
           <div className="flex gap-1 mb-2">
             {session.lessonCards.map((_, i) => (
-              <div key={i} className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
-                <div className={cn(
-                  'h-full rounded-full transition-all duration-500',
-                  i < session.currentCardIndex ? 'w-full bg-brand-gradient'
-                  : i === session.currentCardIndex ? 'w-full bg-primary/40'
-                  : 'w-0',
-                )} />
+              <div key={i} className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                {i < currentIndex ? (
+                  // Completed
+                  <div className="h-full w-full rounded-full bg-brand-gradient" />
+                ) : i === currentIndex ? (
+                  // Active — animated fill
+                  <div
+                    key={timerKey}
+                    className="h-full rounded-full bg-brand-gradient"
+                    style={{
+                      width: timerActive ? '100%' : '0%',
+                      transition: timerActive ? `width ${CARD_DURATION}ms linear` : 'none',
+                    }}
+                  />
+                ) : null}
               </div>
             ))}
           </div>
@@ -103,7 +137,7 @@ export default function SessionPage() {
               <ChevronLeft className="size-4" />
             </Button>
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{session.topic}</span>
-            <span className="text-[10px] font-medium text-muted-foreground">{session.currentCardIndex + 1}/{session.lessonCards.length}</span>
+            <span className="text-[10px] font-medium text-muted-foreground">{currentIndex + 1}/{session.lessonCards.length}</span>
           </div>
         </div>
       )}
@@ -133,19 +167,17 @@ export default function SessionPage() {
         </div>
       )}
 
-      {/* Lesson cards — full-screen card layout */}
+      {/* Lesson cards — full-screen story card */}
       {isLearning && (
         <div className="relative animate-card-enter" style={{ height: 'calc(100dvh - 110px)' }}>
           <div ref={containerRef} className="swipe-container h-full px-4 pb-4">
             <div style={style} className="h-full">
               <LessonCard
-                card={session.lessonCards[session.currentCardIndex]}
-                index={session.currentCardIndex}
+                card={session.lessonCards[currentIndex]}
+                index={currentIndex}
                 total={session.lessonCards.length}
-                isLastCard={isLastCard}
                 onNext={handleNext}
                 onPrev={handlePrev}
-                isFirstCard={isFirstCard}
               />
             </div>
           </div>

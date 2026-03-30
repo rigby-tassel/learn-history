@@ -48,22 +48,15 @@ export async function searchContent(topic: string): Promise<SearchResult> {
 
   const parsed = JSON.parse(content)
 
-  // Attach stock photos for each card via loremflickr (free, no key needed)
-  const cardsWithMedia = parsed.lessonCards.map((card: LessonCard & { mediaSearchTerm?: string }) => {
-    if (card.mediaSearchTerm) {
-      const query = card.mediaSearchTerm.split(' ').slice(0, 3).join(',')
-      return {
-        ...card,
-        mediaType: 'image' as const,
-        mediaUrl: `https://loremflickr.com/800/400/${encodeURIComponent(query)}`,
-        mediaCaption: card.mediaCaption,
-      }
-    }
-    return { ...card, mediaType: card.mediaUrl ? card.mediaType : 'none' as const }
-  })
+  // No images — cards use gradient backgrounds
+  const cards = (parsed.lessonCards || []).map((card: LessonCard) => ({
+    ...card,
+    mediaType: 'none' as const,
+    mediaUrl: undefined,
+  }))
 
   return {
-    lessonCards: cardsWithMedia,
+    lessonCards: cards,
     quizQuestions: parsed.quizQuestions || [],
     suggestedSubtopics: parsed.suggestedSubtopics || [],
   }

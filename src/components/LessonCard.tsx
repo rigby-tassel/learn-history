@@ -1,124 +1,75 @@
-import { useState } from 'react'
 import type { LessonCard as LessonCardType } from '@/types'
 import ReadAloudButton from './ReadAloudButton'
-import { Badge } from '@/components/ui/badge'
-import { ChevronDown, ChevronRight, Sparkles, Clock } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
+// Rotating gradient colors per card index for visual variety
+const GRADIENTS = [
+  'from-violet-600 to-indigo-600',
+  'from-blue-600 to-cyan-500',
+  'from-emerald-600 to-teal-500',
+  'from-amber-500 to-orange-500',
+  'from-rose-500 to-pink-500',
+  'from-purple-600 to-violet-500',
+  'from-sky-500 to-blue-600',
+  'from-teal-500 to-emerald-600',
+  'from-orange-500 to-red-500',
+  'from-indigo-500 to-purple-600',
+]
 
 interface LessonCardProps {
   card: LessonCardType
   index: number
   total: number
-  isLastCard?: boolean
-  isFirstCard?: boolean
   onNext?: () => void
   onPrev?: () => void
 }
 
-export default function LessonCard({ card, index, total, isLastCard, isFirstCard, onNext, onPrev }: LessonCardProps) {
-  const [showFact, setShowFact] = useState(false)
-  const [showDates, setShowDates] = useState(false)
-  const [imgFailed, setImgFailed] = useState(false)
+export default function LessonCard({ card, index, total, onNext, onPrev }: LessonCardProps) {
+  const gradient = GRADIENTS[index % GRADIENTS.length]
 
-  const fullText = [card.content, card.funFact].filter(Boolean).join('. ')
-  const hasImage = card.mediaUrl && card.mediaType !== 'none' && !imgFailed
+  const handleTap = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const midpoint = rect.width / 2
+
+    if (x < midpoint) {
+      onPrev?.()
+    } else {
+      onNext?.()
+    }
+  }
 
   return (
-    <div className="relative h-full rounded-3xl overflow-hidden bg-card shadow-2xl flex flex-col border border-border/50">
-      {/* Hero image section */}
-      {hasImage ? (
-        <div className="relative h-[35%] min-h-[160px] overflow-hidden shrink-0">
-          <img
-            src={card.mediaUrl}
-            alt={card.mediaCaption || ''}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            onError={() => setImgFailed(true)}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
-          {card.mediaCaption && (
-            <p className="absolute bottom-2 left-4 text-[10px] text-muted-foreground/60">
-              {card.mediaCaption}
-            </p>
-          )}
-        </div>
-      ) : (
-        <div className="h-[12%] min-h-[48px] bg-brand-gradient opacity-20 shrink-0" />
-      )}
+    <div
+      onClick={handleTap}
+      className="relative h-full rounded-3xl overflow-hidden shadow-2xl flex flex-col cursor-pointer select-none"
+    >
+      {/* Gradient background — fills entire card */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
 
-      {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6 space-y-3">
-        {/* Card badge + Read aloud */}
-        <div className="flex items-center justify-between">
-          <Badge className="rounded-full text-[10px] font-bold bg-primary/10 text-primary border-0">
-            {index + 1} of {total}
-          </Badge>
-          <ReadAloudButton text={fullText} />
-        </div>
+      {/* Content centered on the card */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 py-12 text-center">
+        {/* Card counter */}
+        <span className="text-white/40 text-xs font-bold uppercase tracking-widest mb-6">
+          {index + 1} / {total}
+        </span>
 
         {/* Title */}
-        <h2 className="text-lg font-black text-foreground leading-snug">{card.title}</h2>
+        <h2 className="text-2xl font-black text-white leading-tight mb-5">
+          {card.title}
+        </h2>
 
-        {/* Content */}
-        <p className="text-[14px] leading-relaxed text-muted-foreground">{card.content}</p>
+        {/* Content — 1-2 sentences, large readable text */}
+        <p className="text-lg text-white/85 leading-relaxed font-medium max-w-sm">
+          {card.content}
+        </p>
+      </div>
 
-        {/* Fun fact */}
-        {card.funFact && (
-          !showFact ? (
-            <button
-              onClick={() => setShowFact(true)}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-gold-gradient text-white
-                         shadow-md active:scale-[0.98] transition-transform text-left"
-            >
-              <Sparkles className="size-5 shrink-0" />
-              <span className="text-sm font-bold flex-1">Tap for a fun fact!</span>
-              <ChevronDown className="size-4 shrink-0" />
-            </button>
-          ) : (
-            <div className="bg-amber-50 rounded-2xl px-4 py-3.5 animate-expand border border-amber-200/60">
-              <p className="text-sm text-amber-900">
-                <span className="font-bold text-amber-700">Fun fact: </span>{card.funFact}
-              </p>
-            </div>
-          )
-        )}
-
-        {/* Timeline */}
-        {card.keyDates && card.keyDates.length > 0 && (
-          <div>
-            <button
-              onClick={() => setShowDates(!showDates)}
-              className={cn(
-                'w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all active:scale-[0.98] text-left',
-                showDates ? 'bg-primary/10 border border-primary/20' : 'bg-primary/5 border border-primary/10',
-              )}
-            >
-              <Clock className="size-4 text-primary shrink-0" />
-              <span className="text-sm font-semibold text-primary flex-1">Timeline</span>
-              <ChevronDown className={cn('size-4 text-primary transition-transform', showDates && 'rotate-180')} />
-            </button>
-            {showDates && (
-              <div className="mt-2 pl-4 border-l-2 border-primary/30 space-y-2 animate-expand">
-                {card.keyDates.map((date, i) => (
-                  <p key={i} className="text-xs text-muted-foreground pl-3">{date}</p>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Next / Start Quiz button — at the bottom of the content */}
-        {onNext && (
-          <button
-            onClick={onNext}
-            className="w-full flex items-center justify-center gap-2 px-5 py-4 mt-2 rounded-2xl
-                       bg-brand-gradient text-white text-base font-bold shadow-lg
-                       active:scale-[0.97] transition-transform"
-          >
-            {isLastCard ? 'Start Quiz' : 'Continue'}
-            <ChevronRight className="size-5" />
-          </button>
-        )}
+      {/* Bottom: read aloud + tap hint */}
+      <div className="relative z-10 flex items-center justify-between px-6 pb-6">
+        <ReadAloudButton text={`${card.title}. ${card.content}`} />
+        <span className="text-white/30 text-[10px] font-medium">
+          tap to continue →
+        </span>
       </div>
     </div>
   )
