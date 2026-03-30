@@ -26,11 +26,11 @@ export default function XPPopup() {
   if (items.length === 0) return null
 
   return (
-    <div className="fixed top-14 right-4 z-50 flex flex-col items-end gap-1 pointer-events-none">
+    <div className="fixed top-20 right-5 z-50 flex flex-col items-end gap-1 pointer-events-none">
       {items.map((item, idx) => (
         <span
           key={item.id}
-          className="animate-xp-float text-sm font-black text-xp-gold drop-shadow-md"
+          className="animate-xp-float text-base font-black text-xp-gold drop-shadow-lg bg-xp-gold/10 backdrop-blur-md rounded-full px-3 py-1"
           style={{ marginTop: idx * -4 }}
         >
           +{item.amount} XP

@@ -11,7 +11,8 @@ import { useSwipeGesture } from '@/hooks/useSwipeGesture'
 import { useGameState } from '@/hooks/useGameState'
 import type { QuizAnswer } from '@/types'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react'
+import { ChevronLeft, ArrowRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export default function SessionPage() {
   const navigate = useNavigate()
@@ -39,7 +40,7 @@ export default function SessionPage() {
     prevCard()
   }
 
-  const { containerRef, style, isDragging, dragDirection, dragProgress } = useSwipeGesture({
+  const { containerRef, style } = useSwipeGesture({
     onSwipeRight: handleNext,
     onSwipeLeft: handlePrev,
     enabled: isLearning,
@@ -81,13 +82,41 @@ export default function SessionPage() {
 
   return (
     <ExploreLayout>
-      {/* Top bar */}
-      <div className="px-5 pt-3 pb-1 flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={handleNewTopic} className="gap-1 text-muted-foreground">
-          <ChevronLeft className="size-4" /> Topics
-        </Button>
-        <span className="text-xs font-bold text-primary uppercase tracking-wider">{session.topic}</span>
-      </div>
+      {/* Story-style progress bar + topic header — only during learning */}
+      {isLearning && (
+        <div className="sticky top-[49px] z-30 bg-background/90 backdrop-blur-xl px-4 pt-3 pb-2">
+          {/* Progress segments */}
+          <div className="flex gap-1 mb-2">
+            {session.lessonCards.map((_, i) => (
+              <div key={i} className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
+                <div className={cn(
+                  'h-full rounded-full transition-all duration-500',
+                  i < session.currentCardIndex ? 'w-full bg-brand-gradient'
+                  : i === session.currentCardIndex ? 'w-full bg-primary/40'
+                  : 'w-0',
+                )} />
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" size="sm" onClick={handleNewTopic} className="gap-0.5 text-muted-foreground -ml-2 h-8">
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{session.topic}</span>
+            <span className="text-[10px] font-medium text-muted-foreground">{session.currentCardIndex + 1}/{session.lessonCards.length}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Non-learning phases still get the topic header */}
+      {!isLearning && session.phase !== 'loading' && (
+        <div className="px-5 pt-3 pb-1 flex items-center justify-between">
+          <Button variant="ghost" size="sm" onClick={handleNewTopic} className="gap-1 text-muted-foreground">
+            <ChevronLeft className="size-4" /> Topics
+          </Button>
+          <span className="text-xs font-bold text-primary uppercase tracking-wider">{session.topic}</span>
+        </div>
+      )}
 
       {/* Loading */}
       {session.phase === 'loading' && !searchMutation.isError && <LoadingState topic={session.topic} />}
@@ -95,52 +124,47 @@ export default function SessionPage() {
       {/* Error */}
       {searchMutation.isError && (
         <div className="flex flex-col items-center gap-4 px-6 py-16 animate-phase-in">
-          <span className="text-4xl">😵</span>
+          <span className="text-5xl">😵</span>
           <p className="text-sm text-muted-foreground text-center">{searchMutation.error?.message || 'Something went wrong'}</p>
           <div className="flex gap-3">
-            <Button onClick={handleRetry} className="rounded-2xl h-11">Try Again</Button>
-            <Button variant="outline" onClick={handleNewTopic} className="rounded-2xl h-11">New Topic</Button>
+            <Button onClick={handleRetry} className="rounded-2xl h-12 bg-brand-gradient text-white px-6">Try Again</Button>
+            <Button variant="outline" onClick={handleNewTopic} className="rounded-2xl h-12 px-6">New Topic</Button>
           </div>
         </div>
       )}
 
-      {/* Lesson cards */}
+      {/* Lesson cards — full-screen card layout */}
       {isLearning && (
-        <div className="animate-phase-in">
-          {/* Card area */}
-          <div className="px-5 pt-2 pb-4">
-            <div ref={containerRef} className="swipe-container">
-              <div style={style}>
-                <LessonCard card={session.lessonCards[session.currentCardIndex]} index={session.currentCardIndex} total={session.lessonCards.length} />
-              </div>
+        <div className="relative animate-card-enter" style={{ height: 'calc(100dvh - 110px)' }}>
+          <div ref={containerRef} className="swipe-container h-full px-4 pb-4">
+            <div style={style} className="h-full">
+              <LessonCard
+                card={session.lessonCards[session.currentCardIndex]}
+                index={session.currentCardIndex}
+                total={session.lessonCards.length}
+              />
             </div>
           </div>
 
-          {/* Bottom nav - always visible */}
-          <div className="sticky bottom-0 bg-background/95 backdrop-blur-md border-t border-border px-5 pt-3 pb-5 space-y-3 z-10">
-            {/* Carousel dots */}
-            <div className="flex items-center justify-center gap-1.5">
-              {session.lessonCards.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === session.currentCardIndex ? 'w-5 bg-primary'
-                    : i < session.currentCardIndex ? 'w-1.5 bg-primary/40'
-                    : 'w-1.5 bg-muted-foreground/20'
-                  }`}
-                />
-              ))}
-            </div>
-            {/* Nav buttons */}
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={handlePrev} disabled={isFirstCard} className="flex-1 h-12 rounded-2xl text-base gap-2">
-                <ChevronLeft className="size-5" /> Back
-              </Button>
-              <Button onClick={handleNext} className="flex-1 h-12 rounded-2xl text-base font-semibold gap-2">
-                {isLastCard ? 'Start Quiz' : 'Next'}
-                {isLastCard ? <ArrowRight className="size-5" /> : <ChevronRight className="size-5" />}
-              </Button>
-            </div>
+          {/* Invisible tap zones */}
+          <button onClick={handlePrev} disabled={isFirstCard}
+                  className="absolute left-0 top-16 bottom-20 w-14 z-10 opacity-0" aria-label="Previous" />
+          <button onClick={handleNext}
+                  className="absolute right-0 top-16 bottom-20 w-14 z-10 opacity-0" aria-label="Next" />
+
+          {/* Floating next button */}
+          <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20 px-5">
+            <Button
+              onClick={handleNext}
+              className="h-14 px-10 rounded-2xl text-base font-bold shadow-xl bg-brand-gradient text-white
+                         active:scale-95 transition-transform border-0"
+            >
+              {isLastCard ? (
+                <><span>Start Quiz</span><ArrowRight className="size-5 ml-2" /></>
+              ) : (
+                'Next →'
+              )}
+            </Button>
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
-const COLORS = ['#6366f1', '#f59e0b', '#22c55e', '#ef4444', '#ec4899', '#3b82f6']
-const PIECE_COUNT = 30
+const COLORS = ['#6366f1', '#f59e0b', '#22c55e', '#ef4444', '#ec4899', '#818cf8', '#5b21b6', '#3b82f6']
+const PIECE_COUNT = 40
 
 function randomBetween(a: number, b: number) {
   return Math.random() * (b - a) + a

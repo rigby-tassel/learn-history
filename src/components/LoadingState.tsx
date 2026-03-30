@@ -12,29 +12,40 @@ export default function LoadingState({ topic }: { topic: string }) {
   }, [])
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-6 px-6 py-12 animate-phase-in">
-      <div className="text-6xl animate-spin-slow">🌍</div>
+    <div className="flex-1 flex flex-col items-center justify-center gap-8 px-6 py-12 animate-phase-in">
+      {/* Branded loader icon */}
+      <div className="size-20 rounded-3xl bg-brand-gradient animate-pulse-ring flex items-center justify-center shadow-xl">
+        <span className="text-3xl">🧭</span>
+      </div>
 
       <div className="text-center">
-        <h2 className="text-lg font-bold text-slate-900 mb-1">
-          Exploring {topic}
+        <h2 className="text-xl font-black text-foreground mb-1">
+          Exploring <span className="text-gradient-brand">{topic}</span>
         </h2>
-        <p className="text-sm text-slate-400 h-5 transition-opacity" key={msgIndex}>
+        <p className="text-sm text-muted-foreground h-5 transition-opacity" key={msgIndex}>
           {LOADING_MESSAGES[msgIndex]}
         </p>
       </div>
 
-      {/* Progress bar */}
+      {/* Gradient progress bar */}
       <div className="w-full max-w-xs">
-        <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-          <div className="h-full bg-primary rounded-full animate-loading-bar" />
+        <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+          <div className="h-full bg-brand-gradient rounded-full animate-loading-bar" />
         </div>
       </div>
 
+      {/* Skeleton card preview */}
+      <div className="w-full max-w-xs space-y-3">
+        <div className="h-28 rounded-2xl skeleton-shimmer" />
+        <div className="h-4 w-3/4 rounded-full skeleton-shimmer" />
+        <div className="h-3 w-full rounded-full skeleton-shimmer" />
+        <div className="h-3 w-5/6 rounded-full skeleton-shimmer" />
+      </div>
+
       {/* Rotating facts */}
-      <div className="bg-white/80 backdrop-blur rounded-2xl px-5 py-4 max-w-xs text-center shadow-sm">
-        <p className="text-xs font-semibold text-primary uppercase mb-1.5">Did you know?</p>
-        <p className="text-sm text-slate-600 leading-relaxed animate-fade-in" key={factIndex}>
+      <div className="bg-card rounded-2xl px-5 py-4 max-w-xs text-center shadow-md border border-border">
+        <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1.5">Did you know?</p>
+        <p className="text-sm text-muted-foreground leading-relaxed animate-fade-in" key={factIndex}>
           {LOADING_FACTS[factIndex]}
         </p>
       </div>
