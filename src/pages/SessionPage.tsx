@@ -11,7 +11,7 @@ import { useSwipeGesture } from '@/hooks/useSwipeGesture'
 import { useGameState } from '@/hooks/useGameState'
 import type { QuizAnswer } from '@/types'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ArrowRight } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function SessionPage() {
@@ -142,29 +142,12 @@ export default function SessionPage() {
                 card={session.lessonCards[session.currentCardIndex]}
                 index={session.currentCardIndex}
                 total={session.lessonCards.length}
+                isLastCard={isLastCard}
+                onNext={handleNext}
+                onPrev={handlePrev}
+                isFirstCard={isFirstCard}
               />
             </div>
-          </div>
-
-          {/* Invisible tap zones */}
-          <button onClick={handlePrev} disabled={isFirstCard}
-                  className="absolute left-0 top-16 bottom-20 w-14 z-10 opacity-0" aria-label="Previous" />
-          <button onClick={handleNext}
-                  className="absolute right-0 top-16 bottom-20 w-14 z-10 opacity-0" aria-label="Next" />
-
-          {/* Floating next button */}
-          <div className="absolute bottom-6 left-0 right-0 flex justify-center z-20 px-5">
-            <Button
-              onClick={handleNext}
-              className="h-14 px-10 rounded-2xl text-base font-bold shadow-xl bg-brand-gradient text-white
-                         active:scale-95 transition-transform border-0"
-            >
-              {isLastCard ? (
-                <><span>Start Quiz</span><ArrowRight className="size-5 ml-2" /></>
-              ) : (
-                'Next →'
-              )}
-            </Button>
           </div>
         </div>
       )}

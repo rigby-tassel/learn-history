@@ -2,16 +2,20 @@ import { useState } from 'react'
 import type { LessonCard as LessonCardType } from '@/types'
 import ReadAloudButton from './ReadAloudButton'
 import { Badge } from '@/components/ui/badge'
-import { ChevronDown, Sparkles, Clock } from 'lucide-react'
+import { ChevronDown, ChevronRight, Sparkles, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LessonCardProps {
   card: LessonCardType
   index: number
   total: number
+  isLastCard?: boolean
+  isFirstCard?: boolean
+  onNext?: () => void
+  onPrev?: () => void
 }
 
-export default function LessonCard({ card, index, total }: LessonCardProps) {
+export default function LessonCard({ card, index, total, isLastCard, isFirstCard, onNext, onPrev }: LessonCardProps) {
   const [showFact, setShowFact] = useState(false)
   const [showDates, setShowDates] = useState(false)
   const [imgFailed, setImgFailed] = useState(false)
@@ -23,7 +27,7 @@ export default function LessonCard({ card, index, total }: LessonCardProps) {
     <div className="relative h-full rounded-3xl overflow-hidden bg-card shadow-2xl flex flex-col border border-border/50">
       {/* Hero image section */}
       {hasImage ? (
-        <div className="relative h-[38%] min-h-[180px] overflow-hidden shrink-0">
+        <div className="relative h-[35%] min-h-[160px] overflow-hidden shrink-0">
           <img
             src={card.mediaUrl}
             alt={card.mediaCaption || ''}
@@ -39,11 +43,11 @@ export default function LessonCard({ card, index, total }: LessonCardProps) {
           )}
         </div>
       ) : (
-        <div className="h-[15%] min-h-[60px] bg-brand-gradient opacity-20 shrink-0" />
+        <div className="h-[12%] min-h-[48px] bg-brand-gradient opacity-20 shrink-0" />
       )}
 
       {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-24 space-y-3">
+      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6 space-y-3">
         {/* Card badge + Read aloud */}
         <div className="flex items-center justify-between">
           <Badge className="rounded-full text-[10px] font-bold bg-primary/10 text-primary border-0">
@@ -101,6 +105,19 @@ export default function LessonCard({ card, index, total }: LessonCardProps) {
               </div>
             )}
           </div>
+        )}
+
+        {/* Next / Start Quiz button — at the bottom of the content */}
+        {onNext && (
+          <button
+            onClick={onNext}
+            className="w-full flex items-center justify-center gap-2 px-5 py-4 mt-2 rounded-2xl
+                       bg-brand-gradient text-white text-base font-bold shadow-lg
+                       active:scale-[0.97] transition-transform"
+          >
+            {isLastCard ? 'Start Quiz' : 'Continue'}
+            <ChevronRight className="size-5" />
+          </button>
         )}
       </div>
     </div>
